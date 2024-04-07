@@ -1,0 +1,223 @@
+import java.io.*;
+import java.util.*;
+
+public class BookManager {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Library library = new Library();
+        System.out.println("Initializing Book Database...");
+        library.initializeBookDatabase("Books.txt");
+        while (true) {
+            int option = 0;
+            System.out.println("\n------ Book Management System ------\n");
+           System.out.println("1. Add a Book\n2. Search for a Book\n3. Remove a Book\n4. Update Book Details\n5. View All Books\n6. Save & Exit\n\nEnter your choice: ");
+
+            option = scanner.nextInt();
+            scanner.nextLine();
+            switch (option) {
+                case 1:
+                    library.addBook();
+                    break;
+                case 2:
+                    library.searchBooks();
+                    break;
+                case 3:
+                    library.removeBook();
+                    break;
+                case 4:
+                    library.updateBookDetails();
+                    break;
+                case 5:
+                    library.displayAllBooks();
+                    break;
+                case 6:
+                    library.saveBookDatabase("Books.txt");
+                    System.out.println("Book database saved successfully. Exiting...");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid input! Please select a valid option.");
+            }
+        }
+    }
+}
+
+class Book {
+    private String title = "";
+    private String author = "";
+    private float price = 0.0f;
+    private int quantity = 0;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+}
+
+class Library {
+    private List<Book> bookDatabase = new ArrayList<>();
+
+    public void initializeBookDatabase(String fileName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4) {
+                    Book book = new Book();
+                    book.setTitle(parts[0]);
+                    book.setAuthor(parts[1]);
+                    book.setPrice(Float.parseFloat(parts[2]));
+                    book.setQuantity(Integer.parseInt(parts[3]));
+                    bookDatabase.add(book);
+                }
+            }
+            System.out.println("Book database initialized successfully.");
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    public void addBook() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter Book Title: ");
+        String title = scanner.nextLine();
+        System.out.println("Enter Author Name: ");
+        String author = scanner.nextLine();
+        System.out.println("Enter the Price: ");
+        float price = scanner.nextFloat();
+        System.out.println("Enter the Quantity: ");
+        int quantity = scanner.nextInt();
+        scanner.nextLine();
+        Book newBook = new Book();
+        newBook.setTitle(title);
+        newBook.setAuthor(author);
+        newBook.setPrice(price);
+        newBook.setQuantity(quantity);
+        bookDatabase.add(newBook);
+        System.out.println("New Book Added Successfully.");
+    }
+
+    public void searchBooks() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter book's keyword: ");
+        String keyword = scanner.nextLine();
+        boolean found = false;
+        for (Book book : bookDatabase) {
+            if (book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                book.getAuthor().toLowerCase().contains(keyword.toLowerCase())) {
+                System.out.println("Title: " + book.getTitle());
+                System.out.println("Author: " + book.getAuthor());
+                System.out.println("Price: " + book.getPrice());
+                System.out.println("Quantity: " + book.getQuantity());
+                System.out.println();
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No matching books found.");
+        }
+    }
+
+    public void removeBook() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter Title of the Book to Remove: ");
+        String title = scanner.nextLine();
+        Iterator<Book> iterator = bookDatabase.iterator();
+        while (iterator.hasNext()) {
+            Book book = iterator.next();
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                iterator.remove();
+                System.out.println("Book removed successfully!.");
+                return;
+            }
+        }
+        System.out.println("Book not found.");
+    }
+
+    public void updateBookDetails() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter Title of the Book to Update: ");
+        String title = scanner.nextLine();
+        for (Book book : bookDatabase) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                System.out.println("Enter New Title (or press Enter to keep unchanged): ");
+                String newTitle = scanner.nextLine();
+                if (!newTitle.isEmpty()) {
+                    book.setTitle(newTitle);
+                }
+                System.out.println("Enter New Author (or press Enter to keep unchanged): ");
+                String newAuthor = scanner.nextLine();
+                if (!newAuthor.isEmpty()) {
+                    book.setAuthor(newAuthor);
+                }
+                System.out.println("Enter New Price (or press 0 to keep unchanged): ");
+                float newPrice = scanner.nextFloat();
+                if (newPrice != 0) {
+                    book.setPrice(newPrice);
+                }
+                System.out.println("Enter New Quantity (or press 0 to keep unchanged): ");
+                int newQuantity = scanner.nextInt();
+                if (newQuantity != 0) {
+                    book.setQuantity(newQuantity);
+                }
+                System.out.println("Book details updated successfully.");
+                return;
+            }
+        }
+        System.out.println("Book not found.");
+    }
+
+    public void displayAllBooks() {
+        if (bookDatabase.isEmpty()) {
+            System.out.println("No books available.");
+        } else {
+            System.out.println("------ List of Books ------");
+            for (Book book : bookDatabase) {
+                System.out.println("Title: " + book.getTitle());
+                System.out.println("Author: " + book.getAuthor());
+                System.out.println("Price: " + book.getPrice());
+                System.out.println("Quantity: " + book.getQuantity());
+                System.out.println();
+            }
+        }
+    }
+
+    public void saveBookDatabase(String fileName) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            for (Book book : bookDatabase) {
+                writer.write(book.getTitle() + "," + book.getAuthor() + "," +
+                        book.getPrice() + "," + book.getQuantity() + "\n");
+            }
+            System.out.println("Book database saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+}
